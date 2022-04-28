@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Meeting {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  location    Location @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  authorId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Comment       Comment[]
+  UsersOnMeetig UsersOnMeetig[]
+}
+
+model Categories {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model Location {
+  id          Int       @id @default(autoincrement())
+  coords      String
+  name        String
+  description String?
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    Int
+  Meeting     Meeting[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+}
+
+model UsersOnMeetig {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  meeting    Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId  Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([userId,meetingId])
+
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  name          String
+  Location      Location[]
+  hash          String  
+  UsersOnMeetig UsersOnMeetig[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+  text      String
+  meetingId Int
+  createdAt DateTime @default(now())
+}
